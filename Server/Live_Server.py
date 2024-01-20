@@ -10,8 +10,6 @@ try:
     while True:
         oldcontent = hash(open(name, "r").read())
         subprocess.check_output(
-            ["git", "stash"])
-        subprocess.check_output(
             ["git", "pull"])
         is_same = hash(open(name, "r").read()) == oldcontent
         if is_same:

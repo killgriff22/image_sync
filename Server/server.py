@@ -47,7 +47,7 @@ def request():
         Errors = eval(flask.request.args.get('Errors'))
         bundle(Tracker, Errors if Errors != [] else None)
         print(f"Requested {Errors} from {Tracker}")
-        return flask.send_from_directory(f"Archives/", f"{Tracker}.zip")
+        return flask.send_file(f"Archives/{Tracker}.zip")
     return "Request failed"
 
 
