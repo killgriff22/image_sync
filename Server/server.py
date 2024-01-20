@@ -45,9 +45,10 @@ def request():
     if flask.request.method == 'POST':
         Tracker = flask.request.args.get('Name')
         Errors = eval(flask.request.args.get('Errors'))
-        print(Tracker)
-        print(Errors)
-        return "Request failed"
+        bundle(Tracker, Errors if Errors != [] else None)
+        print(f"Requested {Errors} from {Tracker}")
+        return flask.send_from_directory(f"Archives/", f"{Tracker}.zip")
+    return "Request failed"
 
 
 def create_hashes(TrackerName):
