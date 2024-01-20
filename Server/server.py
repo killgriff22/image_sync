@@ -1,6 +1,5 @@
 from ssl_context import ssl_context
-import flask
-import os
+from classes import *
 app = flask.Flask(__name__)
 basepath = "../"
 
@@ -27,10 +26,60 @@ def root(path):
 @app.route('/upload', methods=['POST'])
 def upload():
     if flask.request.method == 'POST':
-        f = flask.request.files['file']
+        f = flask.request.files['upload_file']
         f.save(f"Backup/{f.filename}")
+        if f.filename.endswith(".zip"):
+            import zipfile
+            with zipfile.ZipFile(f"Backup/{f.filename}", mode="r") as archive:
+                for file in archive.namelist():
+                    archive.extract(file, path="Backup/")
+            os.remove(f"Backup/{f.filename}")
         return f"Uploaded {f.filename}"
     return "Upload failed"
 
 
-app.run("0.0.0.0", 4385, ssl_context=ssl_context, debug=True)
+def create_hashes(TrackerName):
+    # Create a dictionary for the hashes
+    # Create a hash for each file in the in the dir with the same name as self.Name
+    hashes = {}
+    for root, dirs, files in os.walk(f'Backup/{TrackerName}'):
+        for file in files:
+            hashes[file] = hashlib.md5(
+                open(os.path.join(root, file), 'rb').read()).hexdigest()
+    # Return the dictionary
+    return hashes
+
+
+@app.route('/compare', methods=['POST'])
+def compare():
+    if flask.request.method == 'POST':
+        Errors = {
+            'NotFound': [],
+            'NoMatch': []
+        }
+        hashes_there = flask.request.json
+        hashes_here = create_hashes(hashes_there['Name'])
+        TrackerName = hashes_there['Name']
+        if not os.path.isdir(f"Backup/{TrackerName}"):
+            os.mkdir(f"Backup/{TrackerName}")
+        files = list(hashes_there.keys())
+        files.remove('Name')
+        for file in files:
+            if not os.path.isfile(f"Backup/{TrackerName}/{file}"):
+                Errors['NotFound'].append(
+                    f"File {file} not found in {TrackerName}")
+                continue
+            if hashes_there[file] != hashes_here[file]:
+                Errors['NoMatch'].append(
+                    f"File {file} in {TrackerName} does not match")
+                continue
+        Errors['NotFound'] = [
+            ''] if not Errors['NotFound'] else Errors['NotFound']
+        Errors['NoMatch'] = [''] if not Errors['NoMatch'] else Errors['NoMatch']
+        Errors['NoMatch'].append('')
+        Errors['NotFound'].append('')
+        return str(Errors)
+    return "Compare failed"
+
+
+app.run("0.0.0.0", 4385, debug=True)  # , ssl_context=ssl_context)
