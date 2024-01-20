@@ -8,7 +8,7 @@ import json
 
 
 def bundle(name, files_to_bundle=None):
-    with open("Backup/Bundler.py", "r+") as f:
+    with open("Backup/Bundler.py", "w") as f:
         f.write(f"""import zipfile
 import os
 # Create a zip file
