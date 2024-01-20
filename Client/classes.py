@@ -67,6 +67,8 @@ class Tracker:
             return True
 
     def request(self, Errors: dict):
+        if not Errors['NoMatch']:
+            return
         args = {
             'Name': self.Name,
             'Errors': str(Errors['NoMatch'])
