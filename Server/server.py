@@ -55,6 +55,8 @@ def compare():
     if flask.request.method == 'POST':
         Errors = {
             'NotFound': [],
+            'NotMatch': [],
+            'Success': [],
             'NoMatch': []
         }
         hashes_there = flask.request.json
@@ -67,12 +69,17 @@ def compare():
         for file in files:
             if not os.path.isfile(f"Backup/{TrackerName}/{file}"):
                 Errors['NotFound'].append(
-                    f"File {file} not found in {TrackerName}")
+                    f"{file}")
                 continue
             if hashes_there[file] != hashes_here[file]:
-                Errors['NoMatch'].append(
-                    f"File {file} in {TrackerName} does not match")
+                Errors['NotMatch'].append(
+                    f"{file}")
                 continue
+            else:
+                Errors['Success'].append(
+                    f"{file}")
+            Errors['NoMatch'] = list(
+                set(hashes_here.keys()) - set(hashes_there.keys()))
         return Errors
     return "Compare failed"
 

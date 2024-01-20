@@ -3,9 +3,10 @@ import hashlib
 
 
 class Tracker:
-    def __init__(self, name):
+    def __init__(self, name, url="http://localhost:4385"):
         self.Name = name
         self.archivepath = None
+        self.url = url
 
     def __repr__(self) -> str or None:
         return self.archivepath
@@ -44,7 +45,7 @@ class Tracker:
         hashes = self.create_hashes()
         hashes['Name'] = self.Name
         # Send the dictionary to the server
-        r = requests.post("http://localhost:4385/compare", json=hashes)
+        r = requests.post(self.url+"/compare", json=hashes)
         # Return the response
-        Errors = r.json
+        Errors = r.json()
         return Errors
