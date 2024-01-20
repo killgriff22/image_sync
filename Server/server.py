@@ -61,6 +61,8 @@ def compare():
         }
         hashes_there = flask.request.json
         hashes_here = create_hashes(hashes_there['Name'])
+        print(hashes_there)
+        print(hashes_here)
         TrackerName = hashes_there['Name']
         if not os.path.isdir(f"Backup/{TrackerName}"):
             os.mkdir(f"Backup/{TrackerName}")
@@ -78,8 +80,8 @@ def compare():
             else:
                 Errors['Success'].append(
                     f"{file}")
-            Errors['NoMatch'] = list(
-                set(hashes_here.keys()) - set(hashes_there.keys()))
+            Errors['NoMatch'] = [
+                file for file in hashes_here.keys() if file not in hashes_there.keys()]
         return Errors
     return "Compare failed"
 
