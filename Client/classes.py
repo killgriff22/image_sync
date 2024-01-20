@@ -55,6 +55,16 @@ class Tracker:
         r = requests.post(self.url+"/upload", files=files)
         # request the files we dont have (Not Implemented)
         self.request(Errors)
+        hashes = self.create_hashes()
+        hashes['Name'] = self.Name
+        # Send the dictionary to the server
+        r = requests.post(self.url+"/compare", json=hashes)
+        # Return the response
+        Errors = r.json()
+        Errors.pop('Success')
+        # check if all the entries in Errors are empty
+        if all([Errors[key] == [] for key in Errors]):
+            return True
 
     def request(self, Errors: dict):
         args = {
@@ -65,3 +75,15 @@ class Tracker:
         r = requests.post(self.url+"/request", params=args,
                           stream=True, allow_redirects=True)
         open('files.zip', 'wb').write(r.content)
+        # unzip the files
+        with zipfile.ZipFile('files.zip', mode="r") as archive:
+            for file in archive.namelist():
+                archive.extract(file)
+        # remove the zip file
+        os.remove('files.zip')
+        # copy the recived files into the Tracker
+        # you can find the recived files in the Backup folder
+        for file in Errors['NoMatch']:
+            shutil.copy(f"Backup/{self.Name}/{file}", self.Name)
+        # remove the Backup folder
+        shutil.rmtree(f"Backup/")
