@@ -78,8 +78,8 @@ def compare():
             else:
                 Errors['Success'].append(
                     f"{file}")
-            Errors['NoMatch'] = [
-                file for file in hashes_here.keys() if file not in hashes_there.keys()]
+            Errors['NoMatch'] = list(
+                set(hashes_here.keys()) - set(hashes_there.keys()))
         return Errors
     return "Compare failed"
 
