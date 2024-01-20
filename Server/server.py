@@ -34,7 +34,9 @@ def upload():
                 for file in archive.namelist():
                     archive.extract(file, path="Backup/")
             os.remove(f"Backup/{f.filename}")
-        return f"Uploaded {f.filename}"
+            print(f"Uploaded {f.filename}")
+            return f"Uploaded {f.filename}"
+    print("Upload failed")
     return "Upload failed"
 
 

@@ -48,4 +48,9 @@ class Tracker:
         r = requests.post(self.url+"/compare", json=hashes)
         # Return the response
         Errors = r.json()
-        return Errors
+        # Bundle the files that are not on the server
+        self.bundle(Errors['NotFound']+Errors['NotMatch'])
+        # Send the bundle to the server
+        files = {'upload_file': open(self.archivepath, 'rb')}
+        r = requests.post(self.url+"/upload", files=files)
+        # request the files we dont have (Not Implemented)
