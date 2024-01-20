@@ -73,12 +73,7 @@ def compare():
                 Errors['NoMatch'].append(
                     f"File {file} in {TrackerName} does not match")
                 continue
-        Errors['NotFound'] = [
-            ''] if not Errors['NotFound'] else Errors['NotFound']
-        Errors['NoMatch'] = [''] if not Errors['NoMatch'] else Errors['NoMatch']
-        Errors['NoMatch'].append('')
-        Errors['NotFound'].append('')
-        return str(Errors)
+        return Errors
     return "Compare failed"
 
 

@@ -46,6 +46,5 @@ class Tracker:
         # Send the dictionary to the server
         r = requests.post("http://localhost:4385/compare", json=hashes)
         # Return the response
-        print(r.text)
-        Errors = json.loads(r.text)
+        Errors = r.json
         return Errors
