@@ -54,3 +54,14 @@ class Tracker:
         files = {'upload_file': open(self.archivepath, 'rb')}
         r = requests.post(self.url+"/upload", files=files)
         # request the files we dont have (Not Implemented)
+        self.request(Errors)
+
+    def request(self, Errors: dict):
+        args = {
+            'Name': self.Name,
+            'Errors': Errors
+        }
+        r = requests.get(self.url+"/request", params=args, stream=True)
+
+        with open('files.zip', 'wb') as out_file:
+            shutil.copyfileobj(r.raw, out_file)

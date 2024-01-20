@@ -40,6 +40,16 @@ def upload():
     return "Upload failed"
 
 
+@app.route('/request', methods=['POST'])
+def request():
+    if flask.request.method == 'POST':
+        Tracker = flask.request.args.get('Name')
+        Errors = flask.request.args.get('Errors')
+        print(Tracker)
+        print(Errors)
+        return "Request failed"
+
+
 def create_hashes(TrackerName):
     # Create a dictionary for the hashes
     # Create a hash for each file in the in the dir with the same name as self.Name
