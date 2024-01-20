@@ -59,9 +59,10 @@ class Tracker:
     def request(self, Errors: dict):
         args = {
             'Name': self.Name,
-            'Errors': Errors
+            'Errors': str(Errors)
         }
-        r = requests.get(self.url+"/request", params=args, stream=True)
+        print(args)
+        r = requests.post(self.url+"/request", params=args, stream=True)
 
         with open('files.zip', 'wb') as out_file:
             shutil.copyfileobj(r.raw, out_file)
