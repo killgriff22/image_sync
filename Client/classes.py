@@ -62,7 +62,6 @@ class Tracker:
             'Errors': str(Errors['NoMatch'])
         }
         print(args)
-        r = requests.post(self.url+"/request", params=args, stream=True)
-
-        with open('files.zip', 'wb') as out_file:
-            shutil.copyfileobj(r.raw, out_file)
+        r = requests.post(self.url+"/request", params=args,
+                          stream=True, allow_redirects=True)
+        open('files.zip', 'wb').write(r.content)
