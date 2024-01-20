@@ -59,7 +59,7 @@ class Tracker:
     def request(self, Errors: dict):
         args = {
             'Name': self.Name,
-            'Errors': str(Errors)
+            'Errors': str(Errors['NoMatch'])
         }
         print(args)
         r = requests.post(self.url+"/request", params=args, stream=True)
