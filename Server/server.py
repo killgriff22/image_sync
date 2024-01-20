@@ -44,7 +44,7 @@ def upload():
 def request():
     if flask.request.method == 'POST':
         Tracker = flask.request.args.get('Name')
-        Errors = list(flask.request.args.get('Errors'))
+        Errors = json.loads(flask.request.args.get('Errors'))
         print(Tracker)
         print(Errors)
         return "Request failed"
