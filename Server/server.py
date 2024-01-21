@@ -1,4 +1,8 @@
 from ssl_context import ssl_context
+import flask
+import os
+import hashlib
+from modules import bundle
 from classes import *
 app = flask.Flask(__name__)
 basepath = "../"
@@ -97,6 +101,11 @@ def compare():
             file for file in hashes_here.keys() if file not in hashes_there.keys()]
         return Errors
     return "Compare failed"
+
+
+@app.route("/inventory")
+def listall():
+    return ([dir for dir in os.listdir("Backup") if os.path.isdir(os.path.join("Backup", dir))])
 
 
 app.run("0.0.0.0", 4385, debug=True)  # , ssl_context=ssl_context)
