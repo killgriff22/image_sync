@@ -39,6 +39,7 @@ shutil.copytree(os.path.join(os.path.dirname(__file__), "Client"), Path)
 print("Customizing files...")
 with open(os.path.join(Path, "Client.py"), "w") as f:
     f.write(f"""from classes import *
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 Url = "{Url}"
 Trackers = {subscribed}
 for tracker in Trackers:

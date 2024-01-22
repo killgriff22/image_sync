@@ -55,34 +55,35 @@ class Tracker:
             f"Sending: {Errors['NotFound']+Errors['NotMatch']}\nReciving: {Errors['NoMatch']}")
         # print what percent of our files are present on the server
         print(
-            f"Percent of files on the server: {round(100*(len(Errors['NotFound'])+len(Errors['NotMatch']))/len(hashes), 2)}%")
+            f"Percent of files on the server: {round(100*(len(Errors['Success']))/len(hashes), 2)}%")
         # Bundle the files that are not on the server
-        if not Errors['NotFound'] and not Errors['NotMatch']:
-            return True
-        print("Bundling files...")
-        self.bundle(Errors['NotFound']+Errors['NotMatch'])
-        # Send the bundle to the server
-        print("Sending bundle...")
-        files = {'upload_file': open(self.archivepath, 'rb')}
-        r = requests.post(self.url+"/upload", files=files)
-        print(f"Server Responded. {r.status_code}")
+        if Errors['NotFound'] or Errors['NotMatch']:
+            print("Bundling files...")
+            self.bundle(Errors['NotFound']+Errors['NotMatch'])
+            # Send the bundle to the server
+            print("Sending bundle...")
+            files = {'upload_file': open(self.archivepath, 'rb')}
+            r = requests.post(self.url+"/upload", files=files)
+            print(f"Server Responded. {r.status_code}")
         # request the files we dont have (Not Implemented)
-        if not Errors['NoMatch']:
-            return True
-        print("Requesting files...")
-        self.request(Errors)
-        print("Final Hash Check...")
-        hashes = self.create_hashes()
-        hashes['Name'] = self.Name
-        # Send the dictionary to the server
-        r = requests.post(self.url+"/compare", json=hashes)
-        print(f"Server Responded. {r.status_code}")
+        if Errors['NoMatch']:
+            print("Requesting files...")
+            self.request(Errors)
+        if Errors['NotMatch'] or Errors['NotFound'] or Errors['NoMatch']:
+            print("Final Hash Check...")
+            hashes = self.create_hashes()
+            hashes['Name'] = self.Name
+            # Send the dictionary to the server
+            r = requests.post(self.url+"/compare", json=hashes)
+            print(f"Server Responded. {r.status_code}")
         # Return the response
-        Errors = r.json()
-        Errors.pop('Success')
-        # check if all the entries in Errors are empty
-        if all([Errors[key] == [] for key in Errors]):
-            return True
+            Errors = r.json()
+            Errors.pop('Success')
+            # check if all the entries in Errors are empty
+            if all([Errors[key] == [] for key in Errors]):
+                return True
+            return False
+        return True
 
     def request(self, Errors: dict):
         if not Errors['NoMatch']:
@@ -91,7 +92,6 @@ class Tracker:
             'Name': self.Name,
             'Errors': str(Errors['NoMatch'])
         }
-        print(args)
         r = requests.post(self.url+"/request", params=args,
                           stream=True, allow_redirects=True)
         open('files.zip', 'wb').write(r.content)
