@@ -26,8 +26,8 @@ def upload():
 @app.route('/request', methods=['POST'])
 def request():
     if flask.request.method == 'POST':
-        Tracker = flask.request.args.get('Name')
-        Errors = eval(flask.request.args.get('Errors'))
+        Tracker = flask.request.json()['Name']
+        Errors = flask.request.json()['Errors']
         bundle(Tracker, Errors if Errors != [] else None)
         print(lightblue(f"Requested {len(Errors)} from {Tracker}"))
         return flask.send_file(f"Archives/{Tracker}.zip")
@@ -45,7 +45,7 @@ def compare():
             'Success': [],
             'NoMatch': []
         }
-        hashes_there = flask.request.json
+        hashes_there = flask.request.json()
         hashes_here = create_hashes(hashes_there['Name'])
         TrackerName = hashes_there['Name']
         if not os.path.isdir(f"Backup/{TrackerName}"):
