@@ -29,7 +29,6 @@ while subscribe:
     try:
         int(subscribe)
         if int(subscribe) <= len(Availible_Trackers) and int(subscribe) < 0:
-            print("should run")
             subscribed.append(Availible_Trackers[int(subscribe)-1])
     except:
         pass
