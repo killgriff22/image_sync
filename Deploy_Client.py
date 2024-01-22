@@ -1,5 +1,5 @@
 from modules import *
-
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 Name = input("What would you like to call the containing folder?:\n>")
 if not Name:
     raise Exception("Name is required")
