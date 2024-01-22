@@ -1,4 +1,6 @@
 from modules import *
+if os.path.exists("DevTools"):
+    os.rmdir("DevTools")
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 Trackers = []
 Port = 4385
@@ -13,7 +15,6 @@ while Tracker_Name:
     Trackers.append(Tracker_Name)
     print(f"Current Trackers: {Trackers}\nLeave Blank to Continue")
     Tracker_Name = input("What would you like to call the tracker?: ")
-print(f"Deploying Server into {Location}")
 use_ssl = input("Would you like to use SSL? (y/N) ").lower() in ["y"]
 if use_ssl:
     print("You can leave these blank and it will defualt to Certs/Key.pem and Certs/Cert.pem")
@@ -40,5 +41,10 @@ app.run('0.0.0.0', {Port}, debug=True{' , ssl_context=ssl_context' if use_ssl el
 print("Server Generated")
 if Port in [80, 443]:
     print("You will need to run this as root")
+print(f"Deploying Server into {Location}")
+for tracker in Trackers:
+    print(f"Adding Tracker {tracker}")
+    os.mkdir(os.path.join(os.path.join("Server", "Backup"), tracker))
 print("Copying files...")
 shutil.copytree(os.path.join(os.path.dirname(__file__), "Server"), Location)
+print("Cleaning Up...")

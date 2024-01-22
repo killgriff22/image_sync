@@ -1,4 +1,6 @@
 from modules import *
+if os.path.exists("DevTools"):
+    os.rmdir("DevTools")
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 Name = input("What would you like to call the containing folder?:\n>")
 if not Name:
