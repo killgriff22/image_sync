@@ -68,6 +68,8 @@ def create_hashes(TrackerName):
 
 def bundle(name, files_to_bundle=None):
     # Create a zip file
+    if type(files_to_bundle) == str:
+        files_to_bundle = eval(files_to_bundle)
     z = zipfile.ZipFile(f'Archives/{name}.zip', "w")
     if files_to_bundle:
         for file in files_to_bundle:
