@@ -1,36 +1,15 @@
 from ssl_context import ssl_context
-import flask
-import os
-import hashlib
-from modules import bundle
 from classes import *
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 app = flask.Flask(__name__)
 basepath = "../"
-
-
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def root(path):
-    if "favicon" in flask.request.full_path:
-        return ""
-    if not os.path.isdir(basepath+path):
-        return flask.send_from_directory(basepath, path)
-    with open("visits", "r+") as f:
-        content = f.read()
-        content += f"{flask.request.remote_addr} {flask.request.full_path}\n"
-        f.write(content)
-    page = f"<a href='..'>..</a><br>"
-    for file in os.listdir(basepath+path):
-        if file in ['$RECYCLE.BIN', "System Volume Information"]:
-            continue
-        page += f"<a href='{file}'>{file}</a><br>"
-    return page
 
 
 @app.route('/upload', methods=['POST'])
 def upload():
     if flask.request.method == 'POST':
         f = flask.request.files['upload_file']
+        print(info(f"{flask.request.remote_addr} is uploading {f.filename}"))
         f.save(f"Backup/{f.filename}")
         if f.filename.endswith(".zip"):
             import zipfile
@@ -38,9 +17,9 @@ def upload():
                 for file in archive.namelist():
                     archive.extract(file, path="Backup/")
             os.remove(f"Backup/{f.filename}")
-            print(f"Uploaded {f.filename}")
+            print(success(f"Uploaded {f.filename}"))
             return f"Uploaded {f.filename}"
-    print("Upload failed")
+    print(error("Upload failed"))
     return "Upload failed"
 
 
@@ -50,26 +29,16 @@ def request():
         Tracker = flask.request.args.get('Name')
         Errors = eval(flask.request.args.get('Errors'))
         bundle(Tracker, Errors if Errors != [] else None)
-        print(f"Requested {Errors} from {Tracker}")
+        print(lightblue(f"Requested {len(Errors)} from {Tracker}"))
         return flask.send_file(f"Archives/{Tracker}.zip")
+    print(error("Request failed"))
     return "Request failed"
-
-
-def create_hashes(TrackerName):
-    # Create a dictionary for the hashes
-    # Create a hash for each file in the in the dir with the same name as self.Name
-    hashes = {}
-    for root, dirs, files in os.walk(f'Backup/{TrackerName}'):
-        for file in files:
-            hashes[file] = hashlib.md5(
-                open(os.path.join(root, file), 'rb').read()).hexdigest()
-    # Return the dictionary
-    return hashes
 
 
 @app.route('/compare', methods=['POST'])
 def compare():
     if flask.request.method == 'POST':
+        print(warn(f"Comparing hashes with {flask.request.remote_addr}"))
         Errors = {
             'NotFound': [],
             'NotMatch': [],
@@ -78,8 +47,6 @@ def compare():
         }
         hashes_there = flask.request.json
         hashes_here = create_hashes(hashes_there['Name'])
-        print(hashes_there)
-        print(hashes_here)
         TrackerName = hashes_there['Name']
         if not os.path.isdir(f"Backup/{TrackerName}"):
             os.mkdir(f"Backup/{TrackerName}")
@@ -99,7 +66,13 @@ def compare():
                     f"{file}")
         Errors['NoMatch'] = [
             file for file in hashes_here.keys() if file not in hashes_there.keys()]
+        print(success(f"Compared hashes with {flask.request.remote_addr}"))
+        copy = Errors[:]
+        copy.pop('Success')
+        for key in copy:
+            print(f"{key}: {len(Errors[key])}")
         return Errors
+    print(error("Compare failed"))
     return "Compare failed"
 
 
