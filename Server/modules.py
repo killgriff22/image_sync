@@ -161,4 +161,4 @@ def compare():
 
 @app.route("/inventory")
 def listall():
-    return ([dir for dir in os.listdir("Backup") if os.path.isdir(os.path.join("Backup", dir))])
+    return [dir for dir in os.listdir("Backup") if os.path.isdir(os.path.join("Backup", dir))]
