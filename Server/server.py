@@ -67,7 +67,7 @@ def compare():
         Errors['NoMatch'] = [
             file for file in hashes_here.keys() if file not in hashes_there.keys()]
         print(success(f"Compared hashes with {flask.request.remote_addr}"))
-        copy = Errors[:]
+        copy = Errors.copy()
         copy.pop('Success')
         for key in copy:
             print(f"{key}: {len(Errors[key])}")
