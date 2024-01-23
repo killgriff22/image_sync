@@ -88,6 +88,46 @@ def bundle(name, files_to_bundle=None):
 app = flask.Flask(__name__)
 
 
+@app.route('/', methods=['GET'])
+def Web_Interface():
+    Trackers = os.listdir("Backup")
+    if "PlaceHolder" in Trackers:
+        Trackers.remove("PlaceHolder")
+    if not flask.request.args:
+        return f"""<html>
+
+<head>
+    <title>ServerName</title>
+</head>
+
+<body>
+    <div id="content">
+        {"".join([f'<a href="?Tracker={tracker}">{tracker}</a><br>' for tracker in Trackers])}
+    </div>
+</body>
+
+</html>
+"""
+    TrackerName = flask.request.args['Tracker']
+    return f"""<html>
+
+<head>
+    <title>Temp</title>
+</head>
+
+<body>
+    <img src="single" style="width:50%;height:50%;">
+</body>
+
+</html>
+"""
+
+
+@app.route("/single")
+def single_file():
+    return flask.send_file("Backup/Tracker/image1.jpg")
+
+
 @app.route('/upload', methods=['POST'])
 def upload():
     if flask.request.method == 'POST':
