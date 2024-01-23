@@ -39,12 +39,12 @@ try:
     print("Customizing files...")
     with open(os.path.join(Path, "Client.py"), "w") as f:
         f.write(f"""from classes import *
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    Url = "http://{Url}{':4385' if ':' not in Url else ''}"
-    Trackers = {subscribed}
-    for tracker in Trackers:
-      Tracker(tracker, Url).sync()
-    """)
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+Url = "http://{Url}{':4385' if ':' not in Url else ''}"
+Trackers = {subscribed}
+for tracker in Trackers:
+  Tracker(tracker, Url).sync()
+""")
 except Exception as e:
     print("An Error Occured")
     print(e)

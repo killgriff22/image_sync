@@ -37,6 +37,7 @@ try:
     print("Generating Server...")
     with open("Server/server.py", "w") as f:
         f.write(f"""from classes import *
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 {'from ssl_context import ssl_context' if use_ssl else ''}
 app.run('0.0.0.0', {Port}, debug=True{' , ssl_context=ssl_context' if use_ssl else ''})
     """)
