@@ -33,10 +33,10 @@ class Tracker:
         # Create a dictionary for the hashes
         # Create a hash for each file in the in the dir with the same name as self.Name
         hashes = {}
-        for root, dirs, files in os.walk(self.Name):
-            for file in files:
-                hashes[file] = hashlib.md5(
-                    open(os.path.join(root, file), 'rb').read()).hexdigest()
+        total_files = len(os.listdir(self.Name))
+        for file in tqdm(os.listdir(self.Name)):
+            hashes[file] = hashlib.md5(
+                open(os.path.join(self.Name, file), 'rb').read()).hexdigest()
         # Return the dictionary
         return hashes
 
@@ -47,7 +47,11 @@ class Tracker:
         hashes['Name'] = self.Name
         # Send the dictionary to the server
         print("Sending hashes...")
-        r = requests.post(self.url+"/compare", json=hashes)
+        try:
+            r = requests.post(self.url+"/compare", json=hashes)
+        except:
+            print("Server not found, Press Enter to continue...")
+            input()
         # Return the response
         print(f"Server Responded. {r.status_code}")
         Errors = r.json()
@@ -81,8 +85,11 @@ class Tracker:
             Errors.pop('Success')
             # check if all the entries in Errors are empty
             if all([Errors[key] == [] for key in Errors]):
+                input("Finished. Press Enter to continue...")
                 return True
+            input("Finished. Press Enter to continue...")
             return False
+        input("Finished. Press Enter to continue...")
         return True
 
     def request(self, Errors: dict):

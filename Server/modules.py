@@ -108,15 +108,27 @@ def Web_Interface():
 
 </html>
 """
-    TrackerName = flask.request.args['Tracker']
-    return f"""<html>
+    if 'Tracker' in flask.request.args.keys() and not 'Path' in flask.request.args.keys():
+        TrackerName = flask.request.args['Tracker']
+        files = os.listdir(f"Backup/{TrackerName}")
+        amtperpage = 5
+        return f"""<html>
 
 <head>
-    <title>Temp</title>
+    <title>{TrackerName}</title>
 </head>
 
-<body>
-    <img src="single" style="width:50%;height:50%;">
+<body style="margin-left:1%;margin-right:1%;background-color: #b00b69;">   
+    <div id="TopBar"
+        style="background-color: #333; overflow: hidden; position: fixed; top: 0; width: 100%; height: 5%;">
+        <a href="/">Back</a><br>
+    </div>
+    <div class="float-container">
+
+    {"".join([f'<div class="float-child" style="float:left;width:{1/amtperpage}%;text-align: center;margin-top:5%"><a href="/?Tracker={TrackerName}&Path={file}">{file}</a></div>' for file in ["testingAKJNHALJSJKBVEJVBLAJVBD"]])}
+
+  
+</div>
 </body>
 
 </html>
@@ -126,6 +138,7 @@ def Web_Interface():
 
 @app.route("/single")
 def single_file():
+
     return flask.send_file("Backup/Tracker/image1.jpg")
 
 
