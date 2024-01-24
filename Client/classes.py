@@ -76,8 +76,9 @@ class Tracker:
                 }
                 r = requests.post(self.url+"/remove", json=args)
                 print(f"Server Responded. {r.status_code}")
-            print("Requesting files...")
-            self.request(Errors)
+            else:
+                print("Requesting files...")
+                self.request(Errors)
         if Errors['NotMatch'] or Errors['NotFound'] or Errors['NoMatch']:
             print("Final Hash Check...")
             hashes = self.create_hashes()
