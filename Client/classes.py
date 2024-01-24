@@ -52,7 +52,7 @@ class Tracker:
         print(f"Server Responded. {r.status_code}")
         Errors = r.json()
         print(
-            f"Sending: {Errors['NotFound']+Errors['NotMatch']}\nReciving: {Errors['NoMatch']}")
+            f"Sending: {Errors['NotFound']+Errors['NotMatch']}\nReciving or Removing: {Errors['NoMatch']}")
         # print what percent of our files are present on the server
         print(
             f"Percent of files on the server: {round(100*(len(Errors['Success']))/len(hashes), 2)}%")
@@ -67,6 +67,15 @@ class Tracker:
             print(f"Server Responded. {r.status_code}")
         # request the files we dont have (Not Implemented)
         if Errors['NoMatch']:
+            do_remove = input("Do you want to remove the files that we lack from the server?\n>") in ['y', 'yes', 'Y', 'Yes']
+            if do_remove:
+                print("Removing files...")
+                args = {
+                    'Name': self.Name,
+                    'Files': Errors['NoMatch']
+                }
+                r = requests.post(self.url+"/remove", json=args)
+                print(f"Server Responded. {r.status_code}")
             print("Requesting files...")
             self.request(Errors)
         if Errors['NotMatch'] or Errors['NotFound'] or Errors['NoMatch']:
@@ -92,7 +101,7 @@ class Tracker:
             'Name': self.Name,
             'Errors': str(Errors['NoMatch'])
         }
-        r = requests.post(self.url+"/request", params=args,
+        r = requests.post(self.url+"/request", json=args,
                           stream=True, allow_redirects=True)
         open('files.zip', 'wb').write(r.content)
         # unzip the files
