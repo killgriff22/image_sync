@@ -88,22 +88,6 @@ def bundle(name, files_to_bundle=None):
 
 app = flask.Flask(__name__)
 
-@app.route("/remove", methods=["POST"])
-def remove():
-    if flask.request.method == "POST":
-        TrackerName = flask.request.json["Name"]
-        Files_to_remove = flask.request.json["Files"]
-        Errors = {"Client":[],"Server":[]}
-        print(warn(f"Removing {len(Files_to_remove)} files from {TrackerName}"))
-        for i,file in enumerate(Files_to_remove):
-            if os.path.isfile(f"Backup/{TrackerName}/{file}"):
-                os.remove(f"Backup/{TrackerName}/{file}")
-                print(success(f"Removed {i}/{len(Files_to_remove)} from {TrackerName}"))
-            else:
-                Errors["Client"].append(f"Client gave bad filename {file}")
-        return Errors
-    print(error("Remove failed"))
-    return "Remove failed"
 
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -175,3 +159,19 @@ def listall():
         for dir in os.listdir("Backup")
         if os.path.isdir(os.path.join("Backup", dir))
     ]
+@app.route("/remove", methods=["POST"])
+def remove():
+    if flask.request.method == "POST":
+        TrackerName = flask.request.json["Name"]
+        Files_to_remove = flask.request.json["Files"]
+        Errors = {"Client":[],"Server":[]}
+        print(warn(f"Removing {len(Files_to_remove)} files from {TrackerName}"))
+        for i,file in enumerate(Files_to_remove):
+            if os.path.isfile(f"Backup/{TrackerName}/{file}"):
+                os.remove(f"Backup/{TrackerName}/{file}")
+                print(success(f"Removed {i}/{len(Files_to_remove)} from {TrackerName}"))
+            else:
+                Errors["Client"].append(f"Client gave bad filename {file}")
+        return Errors
+    print(error("Remove failed"))
+    return "Remove failed"
