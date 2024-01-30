@@ -7,7 +7,7 @@ import flask
 import json
 import zipfile
 import os
-
+from pytonik_ip_vpn_checker.ip import ip
 
 class Fore:
     BLACK = '\033[30m'
@@ -199,3 +199,52 @@ def compare():
 @app.route("/inventory")
 def listall():
     return [dir for dir in os.listdir("Backup") if os.path.isdir(os.path.join("Backup", dir))]
+block_all = False
+def get_location(ip_):
+    obj = ip()
+    obj.property(ip_)
+    location_data = {
+      "IP":ip_,
+      "City":obj.city,
+      "Country":obj.country,
+      "Region":obj.region,
+      "Is_VPN":obj.is_vpn
+    }
+    return location_data
+@app.route("/")
+@app.route("/<path>")
+def Nothing(path):
+  return "",404
+@app.route("/blockoff",methods=['POST'])
+def blockalloff():
+  if "auth" in flask.request.json.keys():
+    if flask.request.json['auth'] == "thisisx-xburnme<3":
+      block_all = False
+      return str(block_all)
+  return "Bad Auth",403
+@app.route("/blockon",methods=['POST'])
+def blockallon():
+  if "auth" in flask.request.json.keys():
+    if flask.request.json['auth'] == "thisisx-xburnme<3":
+      block_all = True
+      return str(block_all)
+  return "Bad Auth",403
+@app.before_request
+def before_request_func():
+  with open("blacklist","r") as f:
+    lines = f.readlines()
+#    return f"Please do not interact with this domain!<br>"
+    for i,line in enumerate(lines[:]):
+      lines[i] = line.strip()
+    if flask.request.remote_addr in lines or flask.request.path in ['','/'] or (block_all and not 'block' in flask.request.path):
+        return f"This domain has blocked you.<br>\n{get_location(flask.request.remote_addr)}"
+@app.route('/blacklist',methods=['POST'])
+def blacklist():
+    if 'ips' in flask.request.json.keys():
+        with open(blacklist,"+a") as f:
+            if f.read()[-1] != "\n":
+                f.write("\n")
+            for ip in flask.request.json['ips']:
+                f.write(f"{ip}\n")
+        return f"added {len(flask.request.json['ips'])} ip{'s' if len(flask.request.json['ips']) > 1 else ''} to blacklist"
+    return "Please add at least one ip to block", 500
