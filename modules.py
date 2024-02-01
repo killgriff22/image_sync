@@ -6,6 +6,7 @@ import hashlib
 import json
 import zipfile
 import requests
+from tqdm import tqdm
 import shutil
 print(r"""
 [36m /$$$$$$$$[31m                               [36m/$$   /$$  /$$$$$$[37m

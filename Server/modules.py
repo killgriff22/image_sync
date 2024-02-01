@@ -8,7 +8,7 @@ import json
 import zipfile
 import os
 from pytonik_ip_vpn_checker.ip import ip
-
+from tqdm import tqdm
 class Fore:
     BLACK = '\033[30m'
     RED = '\033[31m'
@@ -59,7 +59,7 @@ def create_hashes(TrackerName):
     # Create a hash for each file in the in the dir with the same name as self.Name
     hashes = {}
     for root, dirs, files in os.walk(f'Backup/{TrackerName}'):
-        for file in files:
+        for file in tqdm(files):
             hashes[file] = hashlib.md5(
                 open(os.path.join(root, file), 'rb').read()).hexdigest()
     # Return the dictionary
@@ -72,7 +72,7 @@ def bundle(name, files_to_bundle=None):
         files_to_bundle = eval(files_to_bundle)
     z = zipfile.ZipFile(f'Archives/{name}.zip', "w")
     if files_to_bundle:
-        for file in files_to_bundle:
+        for file in tqdm(files_to_bundle):
             z.write("Backup/"+name+"/"+file)
         z.close()
         return
@@ -88,42 +88,6 @@ def bundle(name, files_to_bundle=None):
 app = flask.Flask(__name__)
 
 
-@app.route('/', methods=['GET'])
-def Web_Interface():
-    Header = f"""
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ServerName</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-  </head>
-  <body>
-"""
-    Footer="""<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-  </body>
-</html>"""
-    Trackers = os.listdir("Backup")
-    if "PlaceHolder" in Trackers:
-        Trackers.remove("PlaceHolder")
-    if not flask.request.args:
-        Page= Header + f"""<div><h1>Trackers</h1></div><div class="list-group">{" ".join([f'<a href="/?Tracker={Tracker}" class="list-group-item list-group-item-action">{Tracker}</a>' for Tracker in Trackers])}</div>""" + Footer
-        return Page
-    if 'Tracker' in flask.request.args.keys() and not 'File' in flask.request.args.keys():
-        TrackerName = flask.request.args['Tracker']
-        files = os.listdir(f"Backup/{TrackerName}")
-        return Header+f"""<div><h2>Files in {TrackerName}</h2></div><div class="list-group">{"".join([f'''<a data-bs-toggle="collapse" href="#{file}" role="button" aria-expanded="false" aria-controls="{file}" class="btn btn-primary list-group-item list-group-item-action" href="/?Tracker={TrackerName}&Path={file}">{file}</a><div class="collapse" id="{file}"><div class="card card-body"><button onclick="window.location.href='?Tracker={TrackerName}&File={file}';">Download</button></div></div><br>''' for file in files])}</div>"""+Footer
-    if 'Tracker' in flask.request.args.keys() and 'File' in flask.request.args.keys():
-        TrackerName = flask.request.args['Tracker']
-        File = flask.request.args['File']
-        return flask.send_file(f"Backup/{TrackerName}/{File}",as_attachment=True)
-
-@app.route("/single")
-def single_file():
-
-    return flask.send_file("Backup/Tracker/image1.jpg")
-
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -134,7 +98,7 @@ def upload():
         if f.filename.endswith(".zip"):
             import zipfile
             with zipfile.ZipFile(f"Backup/{f.filename}", mode="r") as archive:
-                for file in archive.namelist():
+                for file in tqdm(archive.namelist()):
                     archive.extract(file, path="Backup/")
             os.remove(f"Backup/{f.filename}")
             print(success(f"Uploaded {f.filename}"))
@@ -172,7 +136,7 @@ def compare():
             os.mkdir(f"Backup/{TrackerName}")
         files = list(hashes_there.keys())
         files.remove('Name')
-        for file in files:
+        for file in tqdm(files):
             if not os.path.isfile(f"Backup/{TrackerName}/{file}"):
                 Errors['NotFound'].append(
                     f"{file}")
@@ -220,14 +184,14 @@ def blockalloff():
   if "auth" in flask.request.json.keys():
     if flask.request.json['auth'] == "thisisx-xburnme<3":
       block_all = False
-      return str(block_all)
+      return str(block_all),200
   return "Bad Auth",403
 @app.route("/blockon",methods=['POST'])
 def blockallon():
   if "auth" in flask.request.json.keys():
     if flask.request.json['auth'] == "thisisx-xburnme<3":
       block_all = True
-      return str(block_all)
+      return str(block_all),200
   return "Bad Auth",403
 @app.before_request
 def before_request_func():
@@ -237,7 +201,7 @@ def before_request_func():
     for i,line in enumerate(lines[:]):
       lines[i] = line.strip()
     if flask.request.remote_addr in lines or flask.request.path in ['','/'] or (block_all and not 'block' in flask.request.path):
-        return f"This domain has blocked you.<br>\n{get_location(flask.request.remote_addr)}"
+        return f"This domain has blocked you.<br>\n{get_location(flask.request.remote_addr)}",418
 @app.route('/blacklist',methods=['POST'])
 def blacklist():
     if 'ips' in flask.request.json.keys():
