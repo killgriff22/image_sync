@@ -9,6 +9,8 @@ import zipfile
 import os
 from pytonik_ip_vpn_checker.ip import ip
 from tqdm import tqdm
+
+
 class Fore:
     BLACK = '\033[30m'
     RED = '\033[31m'
@@ -88,7 +90,6 @@ def bundle(name, files_to_bundle=None):
 app = flask.Flask(__name__)
 
 
-
 @app.route('/upload', methods=['POST'])
 def upload():
     if flask.request.method == 'POST':
@@ -124,32 +125,26 @@ def compare():
     if flask.request.method == 'POST':
         print(warn(f"Comparing hashes with {flask.request.remote_addr}"))
         Errors = {
-            'NotFound': [],
-            'NotMatch': [],
-            'Success': [],
-            'NoMatch': []
+            'NotFound': set(),
+            'NotMatch': set(),
+            'Success': set(),
+            'NoMatch': set()
         }
         hashes_there = flask.request.json
-        hashes_here = create_hashes(hashes_there['Name'])
         TrackerName = hashes_there['Name']
+        hashes_here = create_hashes(TrackerName)
+        hash_set = set(list(hashes_here.keys()))
         if not os.path.isdir(f"Backup/{TrackerName}"):
             os.mkdir(f"Backup/{TrackerName}")
-        files = list(hashes_there.keys())
+        files = set(list(hashes_there.keys()))
         files.remove('Name')
-        for file in tqdm(files):
-            if not os.path.isfile(f"Backup/{TrackerName}/{file}"):
-                Errors['NotFound'].append(
-                    f"{file}")
-                continue
-            if hashes_there[file] != hashes_here[file]:
-                Errors['NotMatch'].append(
-                    f"{file}")
-                continue
+        Errors['NotFound'] = files - hash_set
+        Errors['NoMatch'] = hash_set - files
+        for file in hash_set & files:
+            if hashes_here[file] != hashes_there[file]:
+                Errors['NotMatch'].add(file)
             else:
-                Errors['Success'].append(
-                    f"{file}")
-        Errors['NoMatch'] = [
-            file for file in hashes_here.keys() if file not in hashes_there.keys()]
+                Errors['Success'].add(file)
         print(success(f"Compared hashes with {flask.request.remote_addr}"))
         copy = Errors.copy()
         copy.pop('Success')
@@ -163,49 +158,63 @@ def compare():
 @app.route("/inventory")
 def listall():
     return [dir for dir in os.listdir("Backup") if os.path.isdir(os.path.join("Backup", dir))]
+
+
 block_all = False
+
+
 def get_location(ip_):
     obj = ip()
     obj.property(ip_)
     location_data = {
-      "IP":ip_,
-      "City":obj.city,
-      "Country":obj.country,
-      "Region":obj.region,
-      "Is_VPN":obj.is_vpn
+        "IP": ip_,
+        "City": obj.city,
+        "Country": obj.country,
+        "Region": obj.region,
+        "Is_VPN": obj.is_vpn
     }
     return location_data
+
+
 @app.route("/")
 @app.route("/<path>")
 def Nothing(path):
-  return "",404
-@app.route("/blockoff",methods=['POST'])
+    return "", 404
+
+
+@app.route("/blockoff", methods=['POST'])
 def blockalloff():
-  if "auth" in flask.request.json.keys():
-    if flask.request.json['auth'] == "thisisx-xburnme<3":
-      block_all = False
-      return str(block_all),200
-  return "Bad Auth",403
-@app.route("/blockon",methods=['POST'])
+    if "auth" in flask.request.json.keys():
+        if flask.request.json['auth'] == "thisisx-xburnme<3":
+            block_all = False
+            return str(block_all), 200
+    return "Bad Auth", 403
+
+
+@app.route("/blockon", methods=['POST'])
 def blockallon():
-  if "auth" in flask.request.json.keys():
-    if flask.request.json['auth'] == "thisisx-xburnme<3":
-      block_all = True
-      return str(block_all),200
-  return "Bad Auth",403
+    if "auth" in flask.request.json.keys():
+        if flask.request.json['auth'] == "thisisx-xburnme<3":
+            block_all = True
+            return str(block_all), 200
+    return "Bad Auth", 403
+
+
 @app.before_request
 def before_request_func():
-  with open("blacklist","r") as f:
-    lines = f.readlines()
+    with open("blacklist", "r") as f:
+        lines = f.readlines()
 #    return f"Please do not interact with this domain!<br>"
-    for i,line in enumerate(lines[:]):
-      lines[i] = line.strip()
-    if flask.request.remote_addr in lines or flask.request.path in ['','/'] or (block_all and not 'block' in flask.request.path):
-        return f"This domain has blocked you.<br>\n{get_location(flask.request.remote_addr)}",418
-@app.route('/blacklist',methods=['POST'])
+        for i, line in enumerate(lines[:]):
+            lines[i] = line.strip()
+        if flask.request.remote_addr in lines or flask.request.path in ['', '/'] or (block_all and not 'block' in flask.request.path):
+            return f"This domain has blocked you.<br>\n{get_location(flask.request.remote_addr)}", 418
+
+
+@app.route('/blacklist', methods=['POST'])
 def blacklist():
     if 'ips' in flask.request.json.keys():
-        with open(blacklist,"+a") as f:
+        with open(blacklist, "+a") as f:
             if f.read()[-1] != "\n":
                 f.write("\n")
             for ip in flask.request.json['ips']:
