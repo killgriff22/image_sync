@@ -8,7 +8,7 @@ class Tracker:
         self.archivepath = None
         self.url = url
 
-    def __repr__(self) -> str or None:
+    def __repr__(self) -> str | None:
         return self.archivepath
 
     def bundle(self, files_to_bundle=None):

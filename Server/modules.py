@@ -150,6 +150,8 @@ def compare():
         copy.pop('Success')
         for key in copy:
             print(f"{key}: {len(Errors[key])}")
+        for item in Errors.copy():
+            Errors[item] = list(Errors[item])
         return Errors
     print(error("Compare failed"))
     return "Compare failed"

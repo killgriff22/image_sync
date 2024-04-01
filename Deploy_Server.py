@@ -50,8 +50,6 @@ app.run('0.0.0.0', {Port}, debug=True{' , ssl_context=ssl_context' if use_ssl el
         os.mkdir(os.path.join(os.path.join("Server", "Backup"), tracker))
     print("Copying files...")
     shutil.copytree("Server", os.path.join(Location, Name))
-    print("Cleaning Up...")
-    shutil.rmtree("Server")
 except Exception as e:
     print("An Error Occured")
     print(e)
@@ -60,7 +58,7 @@ except Exception as e:
         print(f"removing Tracker {tracker}")
         os.rmdir(os.path.join(os.path.join("Server", "Backup"), tracker))
     try:
-        print("Removing Server")
+        print("Removing what was built")
         shutil.rmtree(os.path.join(Location, Name))
     except:
         print("Server not found")
